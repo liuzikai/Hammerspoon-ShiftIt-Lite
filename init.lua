@@ -12,7 +12,7 @@ obj.name = "HammerspoonShiftIt"
 obj.version = "1.0"
 obj.author = "Peter Klijn"
 obj.homepage = "https://github.com/peterklijn/hammerspoon-shiftit"
-obj.license = ""
+obj.license = "MIT"
 
 obj.mash = { 'ctrl', 'alt', 'cmd' }
 obj.mapping = {
@@ -25,7 +25,7 @@ obj.mapping = {
   botleft = { obj.mash, '3' },
   botright = { obj.mash, '4' },
   maximum = { { 'alt', 'cmd' }, 'm' },
-  maximumForStageManager = { obj.mash, 'm' },
+  switchMaximumMode = { obj.mash, 'm' },
   toggleFullScreen = { obj.mash, 'f' },
   toggleZoom = { obj.mash, 'z' },
   center = { obj.mash, 'c' },
@@ -34,6 +34,8 @@ obj.mapping = {
   resizeOut = { obj.mash, '=' },
   resizeIn = { obj.mash, '-' }
 }
+
+obj.maximumMode = 0
 
 local units = {
   right50       = { x = 0.50, y = 0.00, w = 0.50, h = 1.00 },
@@ -47,7 +49,6 @@ local units = {
   botright50    = { x = 0.50, y = 0.50, w = 0.50, h = 0.50 },
   
   maximum       = { x = 0.00, y = 0.00, w = 1.00, h = 1.00 },
-
   right95       = { x = 0.05, y = 0.00, w = 0.95, h = 1.00 },
 }
 
@@ -122,8 +123,22 @@ function obj:upright() move(units.upright50, nil, true, 0) end
 function obj:botleft() move(units.botleft50, nil, true, 0) end
 function obj:botright() move(units.botright50, nil, true, 0) end
 
-function obj:maximum() move(units.maximum, nil, true, 0) end
-function obj:maximumForStageManager() move(units.right95, nil, true, 0) end
+function obj:maximum() 
+  if self.maximumMode == 0 then
+    move(units.maximum, nil, true, 0)
+  else
+    move(units.right95, nil, true, 0)
+  end
+end
+
+function obj:switchMaximumMode() 
+  self.maximumMode = (self.maximumMode + 1) % 2
+  if self.maximumMode == 0 then
+    hs.notify.show("Hammerspoon ShiftIt", "", "Maximum Mode: Full Screen")
+  else
+    hs.notify.show("Hammerspoon ShiftIt", "", "Maximum Mode: Stage Manager")
+  end
+end
 
 function obj:toggleFullScreen() hs.window.focusedWindow():toggleFullScreen() end
 function obj:toggleZoom() hs.window.focusedWindow():toggleZoom() end
@@ -171,7 +186,7 @@ function obj:bindHotkeys(mapping)
   -- hs.hotkey.bind(self.mapping.botleft[1], self.mapping.botleft[2], function() self:botleft() end)
   -- hs.hotkey.bind(self.mapping.botright[1], self.mapping.botright[2], function() self:botright() end)
   hs.hotkey.bind(self.mapping.maximum[1], self.mapping.maximum[2], function() self:maximum() end)
-  hs.hotkey.bind(self.mapping.maximumForStageManager[1], self.mapping.maximumForStageManager[2], function() self:maximumForStageManager() end)
+  hs.hotkey.bind(self.mapping.switchMaximumMode[1], self.mapping.switchMaximumMode[2], function() self:switchMaximumMode() end)
   hs.hotkey.bind(self.mapping.toggleFullScreen[1], self.mapping.toggleFullScreen[2], function() self:toggleFullScreen() end)
   -- hs.hotkey.bind(self.mapping.toggleZoom[1], self.mapping.toggleZoom[2], function() self:toggleZoom() end)
   -- hs.hotkey.bind(self.mapping.center[1], self.mapping.center[2], function() self:center() end)
