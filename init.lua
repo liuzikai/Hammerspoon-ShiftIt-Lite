@@ -29,7 +29,18 @@ local units = {
   right95       = { x = 0.05, y = 0.00, w = 0.95, h = 1.00 },
 }
 
-function move(unit) hs.window.focusedWindow():move(unit, nil, true, 0) end
+function getWindowSizeInRatio(window)
+  local screenFrame = window:screen():frame()
+  local windowFrame = window:frame()
+  return {
+      w = windowFrame.w / screenFrame.w,
+      h = windowFrame.h / screenFrame.h
+  }
+end
+
+function move(unit) 
+  hs.window.focusedWindow():move(unit, nil, true, 0) 
+end
 
 function obj:maximum() 
   if self.maximumMode == 0 then
@@ -49,7 +60,23 @@ function obj:switchMaximumMode()
 end
 
 function obj:toggleFullScreen() hs.window.focusedWindow():toggleFullScreen() end
-function obj:nextScreen() hs.window.focusedWindow():moveToScreen(hs.window.focusedWindow():screen():next(),true, true, 0) end
+function obj:nextScreen() 
+  local window = hs.window.focusedWindow()
+  local size = getWindowSizeInRatio(window)
+
+  local isFullScreen
+  if self.maximumMode == 0 then
+    isFullScreen = (size.w >= 0.99 and size.h >= 0.99)
+  else
+    isFullScreen = (size.w >= 0.94 and size.h >= 0.99)
+  end
+  
+  window:moveToScreen(window:screen():next(), true, true, 0) 
+  -- If a screen is (almost) full, keep it full
+  if isFullScreen then
+    obj:maximum()
+  end
+end
 
 --- HammerspoonShiftIt:bindHotkeys(mapping)
 --- Method
